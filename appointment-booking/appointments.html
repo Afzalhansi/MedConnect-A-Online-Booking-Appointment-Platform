@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Book Your Appointment</h1>
+        
+        <form id="appointmentForm">
+            <label for="name">Patient's Name:</label>
+            <input type="text" id="name" name="name" placeholder="Enter your name" required>
+
+            <label for="age">Patient's Age:</label>
+            <input type="number" id="age" name="age" placeholder="Enter your age" required>
+
+            <label for="date">Choose Date:</label>
+            <select id="date" name="date" required>
+                <!-- Dates will be dynamically populated using JavaScript -->
+            </select>
+
+            <label for="time">Choose Time:</label>
+            <select id="time" name="time" required>
+                <!-- Times will be dynamically populated using JavaScript -->
+            </select>
+
+            <button type="submit">Book Appointment</button>
+        </form>
+    </div>
+
+    <script>
+        const dateSelect = document.getElementById('date');
+        const timeSelect = document.getElementById('time');
+
+        const today = new Date();
+
+        // Populate the next 7 days
+        for (let i = 0; i < 7; i++) {
+            const option = document.createElement('option');
+            const nextDate = new Date(today);
+            nextDate.setDate(today.getDate() + i);
+            option.value = nextDate.toISOString().split('T')[0];
+            option.textContent = nextDate.toLocaleDateString();
+            dateSelect.appendChild(option);
+        }
+
+        // Populate times from 10 AM to 3 PM with 30-minute intervals
+        const times = [];
+        for (let hour = 10; hour <= 15; hour++) {
+            for (let min = 0; min < 60; min += 30) {
+                const time = new Date(2024, 0, 1, hour, min);
+                const timeString = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                times.push(timeString);
+            }
+        }
+
+        times.forEach(time => {
+            const option = document.createElement('option');
+            option.value = time;
+            option.textContent = time;
+            timeSelect.appendChild(option);
+        });
+
+        // Handle form submission
+        document.getElementById('appointmentForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const patientName = document.getElementById('name').value;
+            const patientAge = document.getElementById('age').value;
+            const selectedDate = document.getElementById('date').value;
+            const selectedTime = document.getElementById('time').value;
+
+            
+            fetch('/book-appointment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: patientName,
+                    age: patientAge,
+                    date: selectedDate,
+                    time: selectedTime
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);  
+            })
+            .catch(error => {
+                alert('Error booking appointment!');
+                console.error('Error:', error);
+            });
+        });
+    </script>
+
+</body>
+</html>
